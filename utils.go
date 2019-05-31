@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"syscall"
@@ -183,4 +185,19 @@ type winsize struct {
 	Col    uint16
 	Xpixel uint16
 	Ypixel uint16
+}
+
+// kernelVersion get the Linux kernel version.
+func kernelVersion() (string, error) {
+	vb, err := ioutil.ReadFile("/proc/version")
+	if err != nil {
+		return "", err
+	}
+	kvs := string(vb)
+	kvr, _ := regexp.Compile("version ([^ ]+)")
+	fss := kvr.FindStringSubmatch(string(kvs))
+	if fss != nil {
+		return fss[1], nil
+	}
+	return "", nil
 }

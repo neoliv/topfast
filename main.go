@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"regexp"
 	"runtime"
 	"syscall"
 	"time"
@@ -142,7 +143,20 @@ func tickCPIs(i time.Duration) {
 	}
 }
 
+// Check if the kernel version supports all the parameters of the taskstat API that we will use.
+func checkKernel() {
+	kv, _ := kernelVersion()
+	if kv != "" {
+		match, _ := regexp.MatchString("2[.]6[.]1", kv)
+		if match {
+			fmt.Printf("This tool does not work for this Linux (kernel %s)\n", kv)
+			os.Exit(1)
+		}
+	}
+}
+
 func main() {
+	checkKernel()
 	parseOpts()
 	// Trap sigusr to display stats
 	go trap()
